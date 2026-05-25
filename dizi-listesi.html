@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OFREE Dizi & Film Listesi</title>
+<title>OFREE — Dizi & Film Listem</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,6 +35,11 @@
   .search-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; pointer-events: none; line-height: 1; }
   .search-clear { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; padding: 0; display: none; transition: color 0.15s; }
   .search-clear:hover { color: var(--text); }
+  .page-wrap { display: grid; grid-template-columns: 220px 1fr 220px; gap: 0; min-height: 100vh; }
+  .side-panel { background: var(--surface); border-right: 0.5px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 16px; }
+  .side-panel.right { border-right: none; border-left: 0.5px solid var(--border); }
+  .side-panel-title { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .side-content { flex: 1; overflow: hidden; }
   main { padding: 24px; max-width: 980px; margin: 0 auto; }
   .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
   .tabs { display: flex; background: var(--surface); border: 0.5px solid var(--border2); border-radius: 10px; padding: 3px; gap: 2px; }
@@ -88,11 +93,42 @@
   .suggestion-title { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .suggestion-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .suggestion-loading { padding: 12px 14px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+
+  /* ── SIDE PANELS ── */
+  .photo-upload-box {
+    border: 1.5px dashed var(--border2); border-radius: 14px;
+    padding: 18px 12px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: var(--surface2);
+  }
+  .photo-upload-box:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .photo-upload-box input[type=file] { display: none; }
+  .photo-upload-icon { font-size: 28px; margin-bottom: 6px; }
+  .photo-upload-label { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .photo-upload-label strong { color: var(--accent); display: block; font-size: 13px; margin-bottom: 2px; }
+  .photo-grid { display: flex; flex-direction: column; gap: 10px; }
+  .photo-item { position: relative; border-radius: 12px; overflow: hidden; background: var(--surface2); aspect-ratio: 16/10; }
+  .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-item-del { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.7); border: none; border-radius: 6px; color: #fff; font-size: 13px; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; }
+  .photo-item:hover .photo-item-del { opacity: 1; }
+  .photo-caption { font-size: 11px; color: var(--muted); padding: 5px 8px; background: var(--surface2); border-top: 0.5px solid var(--border); }
+  .side-note-area { width: 100%; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 10px; resize: none; outline: none; min-height: 100px; transition: border-color 0.2s; }
+  .side-note-area:focus { border-color: var(--accent); }
+  .side-stat-box { background: var(--surface2); border-radius: 12px; padding: 12px 14px; border: 0.5px solid var(--border); }
+  .side-stat-box .ssb-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .side-stat-box .ssb-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); }
+  .side-stat-box.movie .ssb-val { color: var(--film-accent); }
+  .side-divider { border: none; border-top: 0.5px solid var(--border); margin: 4px 0; }
+  @media (max-width: 900px) {
+    .page-wrap { grid-template-columns: 1fr; }
+    .side-panel { display: none; }
+  }
   @media (max-width: 640px) {
     header { padding: 32px 16px 20px; } main { padding: 16px; }
     .two-col { grid-template-columns: 1fr; }
     .search-input { width: 150px; } .search-input:focus { width: 180px; }
   }
+
 
   /* ── AUTH OVERLAY ── */
   #auth-overlay {
@@ -219,7 +255,7 @@
 <!-- ── AUTH OVERLAY ── -->
 <div id="auth-overlay">
   <div class="auth-card">
-    <div class="auth-logo">OFREE<span>Dizi Listem</span></div>
+    <div class="auth-logo"><span>OFREE</span></div>
     <div class="auth-sub">Erişmek için şifre girin</div>
     <div class="auth-label">Şifre</div>
     <input class="auth-input" id="auth-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')tryLogin()" />
@@ -233,7 +269,7 @@
 <!-- ── NAME PICKER ── -->
 <div id="name-overlay">
   <div class="auth-card">
-    <div class="auth-logo">OFREE<span>Dizi film Listem</span></div>
+    <div class="auth-logo"><span>OFREE</span></div>
     <div class="auth-sub">Yorum ve puan vermek için isminizi belirleyin</div>
     <div class="auth-label">Görünen İsim</div>
     <input class="auth-input" id="visitor-name-input" type="text" placeholder="Adınızı girin..." maxlength="30" onkeydown="if(event.key==='Enter')confirmVisitor()" />
@@ -243,11 +279,27 @@
   </div>
 </div>
 
+<div class="page-wrap">
+<!-- LEFT PANEL -->
+<div class="side-panel left" id="left-panel">
+  <div class="side-panel-title">📸 Galeri</div>
+  <label class="photo-upload-box" id="upload-box-left" style="display:none">
+    <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event,'left')">
+    <div class="photo-upload-icon">🖼️</div>
+    <div class="photo-upload-label"><strong>Fotoğraf Ekle</strong>Tıkla veya sürükle</div>
+  </label>
+  <div class="photo-grid" id="photo-grid-left"></div>
+  <hr class="side-divider">
+  <div class="side-panel-title">📝 Notlar</div>
+  <textarea class="side-note-area" id="side-note-left" placeholder="Buraya not ekle..." oninput="saveNote('left',this.value)"></textarea>
+</div>
+<!-- MAIN CONTENT -->
+<div style="min-width:0">
 <header>
   <div class="header-top">
     <div class="header-titles">
-      <h1>OFREE<span>Dizi ve Film Listem</span></h1>
-      <p>İzlediğim dizi ve filmlerin listesi</p>
+      <h1><span style="color:var(--accent)">OFREE</span> <span style="font-size:0.55em;color:var(--muted);font-weight:400;letter-spacing:0.02em">dizi & film listem</span></h1>
+      <p>Dizi adını yaz, bilgiler otomatik gelsin</p>
     </div>
     <div class="search-wrap" style="margin-top:6px;">
       <input class="search-input" id="search-input" type="text" placeholder="Listede ara..." oninput="handleSearch(this.value)" autocomplete="off" />
@@ -302,6 +354,26 @@
     <button class="tool-btn" onclick="exportCSV()">&#11015; CSV indir</button>
   </div>
 </main>
+</div><!-- end main content -->
+<!-- RIGHT PANEL -->
+<div class="side-panel right" id="right-panel">
+  <div class="side-panel-title">📊 İstatistik</div>
+  <div class="side-stat-box"><div class="ssb-label">Toplam Dizi</div><div class="ssb-val" id="side-total-series">0</div></div>
+  <div class="side-stat-box movie"><div class="ssb-label">Toplam Film</div><div class="ssb-val" id="side-total-movies">0</div></div>
+  <div class="side-stat-box"><div class="ssb-label">Ort. IMDb Puanı</div><div class="ssb-val" id="side-avg">—</div></div>
+  <hr class="side-divider">
+  <div class="side-panel-title">🖼️ Kapak Fotoğrafı</div>
+  <label class="photo-upload-box" id="upload-box-right" style="display:none">
+    <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event,'right')">
+    <div class="photo-upload-icon">📷</div>
+    <div class="photo-upload-label"><strong>Fotoğraf Ekle</strong>Tıkla veya sürükle</div>
+  </label>
+  <div class="photo-grid" id="photo-grid-right"></div>
+  <hr class="side-divider">
+  <div class="side-panel-title">🔖 Hatırlatmalar</div>
+  <textarea class="side-note-area" id="side-note-right" placeholder="İzlenecekler, hatırlatmalar..." oninput="saveNote('right',this.value)"></textarea>
+</div>
+</div><!-- end page-wrap -->
 <script>
 /* ══════════════════════════════════════════
    AYARLAR
@@ -402,6 +474,8 @@ function applyRole() {
   document.querySelectorAll('.add-btn, .del-btn, .tool-btn').forEach(el => {
     el.style.display = isAdmin ? '' : 'none';
   });
+  // Side panel upload kutuları
+  if (isAdmin) showAdminPanelControls();
 }
 
 /* ══════════════════════════════════════════
@@ -432,6 +506,7 @@ async function loadFromFirebase() {
   } catch(e) { setSyncStatus('err'); }
   render();
   loadVisitorCount();
+  loadSidePanelData();
 }
 
 async function saveToFirebase() {
@@ -668,6 +743,13 @@ function updateStats() {
   document.getElementById('total-movies').textContent = rows.filter(r => r.name && r.mediaType==='movies').length;
   const scores = rows.filter(r => r.imdb && r.imdb!=='N/A').map(r => parseFloat(r.imdb)).filter(n => !isNaN(n));
   document.getElementById('avg').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
+  // Side panel istatistiklerini güncelle
+  const sideS = document.getElementById('side-total-series');
+  const sideM = document.getElementById('side-total-movies');
+  const sideA = document.getElementById('side-avg');
+  if (sideS) sideS.textContent = rows.filter(r => r.name && r.mediaType==='series').length;
+  if (sideM) sideM.textContent = rows.filter(r => r.name && r.mediaType==='movies').length;
+  if (sideA) sideA.textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
 }
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -847,6 +929,95 @@ function exportCSV() {
   });
   const blob = new Blob(['\uFEFF'+lines.join('\n')], {type:'text/csv;charset=utf-8;'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'listem.csv'; a.click();
+}
+
+
+/* ══════════════════════════════════════════
+   SIDE PANELS — FOTOĞRAF & NOT
+══════════════════════════════════════════ */
+let sidePhotos = { left: [], right: [] };
+let sideNotes  = { left: '', right: '' };
+
+function handlePhotoUpload(event, side) {
+  const files = Array.from(event.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      sidePhotos[side].push({ src: e.target.result, name: file.name });
+      renderPhotos(side);
+      savePhotosToFirebase();
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+
+function renderPhotos(side) {
+  const grid = document.getElementById('photo-grid-' + side);
+  if (!grid) return;
+  grid.innerHTML = '';
+  sidePhotos[side].forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-item';
+    div.innerHTML =
+      '<img src="' + p.src + '" alt="' + esc(p.name) + '" loading="lazy">' +
+      '<button class="photo-item-del" onclick="deletePhoto(\''+side+'\','+i+')" title="Sil">&#215;</button>' +
+      '<div class="photo-caption">' + esc(p.name) + '</div>';
+    grid.appendChild(div);
+  });
+}
+
+function deletePhoto(side, idx) {
+  sidePhotos[side].splice(idx, 1);
+  renderPhotos(side);
+  savePhotosToFirebase();
+}
+
+function saveNote(side, val) {
+  sideNotes[side] = val;
+  saveNotesToFirebase();
+}
+
+async function savePhotosToFirebase() {
+  try {
+    // Fotoğrafları base64 olarak kaydet (küçük resimler için)
+    await fetch('https://dizi-listesi-default-rtdb.firebaseio.com/sidephotos.json',
+      { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(sidePhotos) });
+  } catch(e) {}
+}
+
+async function saveNotesToFirebase() {
+  try {
+    await fetch('https://dizi-listesi-default-rtdb.firebaseio.com/sidenotes.json',
+      { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(sideNotes) });
+  } catch(e) {}
+}
+
+async function loadSidePanelData() {
+  try {
+    const [photosRes, notesRes] = await Promise.all([
+      fetch('https://dizi-listesi-default-rtdb.firebaseio.com/sidephotos.json'),
+      fetch('https://dizi-listesi-default-rtdb.firebaseio.com/sidenotes.json')
+    ]);
+    const photosData = await photosRes.json();
+    const notesData  = await notesRes.json();
+    if (photosData) { sidePhotos = photosData; renderPhotos('left'); renderPhotos('right'); }
+    if (notesData)  {
+      sideNotes = notesData;
+      const nl = document.getElementById('side-note-left');
+      const nr = document.getElementById('side-note-right');
+      if (nl) nl.value = sideNotes.left || '';
+      if (nr) nr.value = sideNotes.right || '';
+    }
+  } catch(e) {}
+}
+
+function showAdminPanelControls() {
+  // Upload kutularını sadece admin'e göster
+  ['upload-box-left','upload-box-right'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
 }
 
 /* ══════════════════════════════════════════
