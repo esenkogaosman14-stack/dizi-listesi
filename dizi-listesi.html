@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -93,14 +94,161 @@
     .two-col { grid-template-columns: 1fr; }
     .search-input { width: 150px; } .search-input:focus { width: 180px; }
   }
+
+  /* ── AUTH OVERLAY ── */
+  #auth-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .auth-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 100%; max-width: 380px;
+    text-align: center;
+    animation: fadeIn 0.35s ease;
+  }
+  .auth-logo { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .auth-logo span { color: var(--accent); }
+  .auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+  .auth-label { font-size: 12px; color: var(--muted); text-align: left; margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .auth-input {
+    width: 100%; padding: 11px 14px; border-radius: 10px;
+    border: 0.5px solid var(--border2); background: var(--surface2);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+    outline: none; transition: border-color 0.2s;
+    margin-bottom: 14px;
+  }
+  .auth-input:focus { border-color: var(--accent); }
+  .auth-btn {
+    width: 100%; padding: 12px; border-radius: 10px; border: none;
+    background: var(--accent); color: #0d0d0f;
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.15s; margin-bottom: 10px;
+  }
+  .auth-btn:hover { opacity: 0.88; }
+  .auth-btn.visitor {
+    background: transparent; color: var(--muted);
+    border: 0.5px solid var(--border2);
+    font-family: 'DM Sans', sans-serif; font-weight: 400;
+  }
+  .auth-btn.visitor:hover { color: var(--text); background: var(--surface2); }
+  .auth-err { font-size: 12px; color: var(--red); margin-bottom: 10px; display: none; }
+  .auth-divider { border: none; border-top: 0.5px solid var(--border); margin: 10px 0; }
+
+  /* ── NAME PICKER ── */
+  #name-overlay {
+    position: fixed; inset: 0; z-index: 9998;
+    background: var(--bg);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  #name-overlay.show { display: flex; }
+
+  /* ── VISITOR BADGE (header) ── */
+  #visitor-badge {
+    display: none; align-items: center; gap: 8px;
+    background: rgba(200,240,96,0.08); border: 0.5px solid rgba(200,240,96,0.2);
+    border-radius: 20px; padding: 5px 12px 5px 8px;
+    font-size: 13px; color: var(--accent);
+  }
+  #visitor-badge.show { display: flex; }
+  #visitor-badge .vb-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent); color: #0d0d0f;
+    font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #visitor-badge .vb-logout {
+    background: none; border: none; cursor: pointer; color: var(--muted);
+    font-size: 15px; padding: 0 0 0 4px; line-height: 1;
+    transition: color 0.15s;
+  }
+  #visitor-badge .vb-logout:hover { color: var(--red); }
+
+  /* ── RATING & COMMENTS ── */
+  .row-visitor-panel {
+    margin-top: 6px; display: none; flex-direction: column; gap: 6px;
+  }
+  .row-visitor-panel.show { display: flex; }
+  .stars-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .star-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 18px; padding: 2px; line-height: 1;
+    transition: transform 0.1s;
+    color: var(--border2); /* unlit */
+  }
+  .star-btn.lit { color: #e8b000; }
+  .star-btn:hover { transform: scale(1.2); }
+  .star-label { font-size: 12px; color: var(--muted); margin-left: 4px; }
+  .comment-wrap { display: flex; gap: 6px; margin-top: 2px; }
+  .comment-input {
+    flex: 1; padding: 7px 11px; border-radius: 8px;
+    border: 0.5px solid var(--border2); background: var(--surface2);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px;
+    outline: none; resize: none; transition: border-color 0.2s;
+    min-height: 34px; max-height: 80px;
+  }
+  .comment-input:focus { border-color: var(--accent); }
+  .comment-send {
+    padding: 7px 12px; border-radius: 8px; border: none;
+    background: var(--accent); color: #0d0d0f;
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+    align-self: flex-end;
+  }
+  .comment-send:hover { opacity: 0.85; }
+  .comments-list { display: flex; flex-direction: column; gap: 5px; }
+  .comment-item {
+    background: var(--surface2); border-radius: 8px;
+    padding: 7px 10px; font-size: 12px; color: var(--text);
+    border-left: 2px solid var(--border2);
+  }
+  .comment-item .ci-header { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .comment-item .ci-name { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--accent); }
+  .comment-item .ci-stars { font-size: 11px; color: #e8b000; }
+  .comment-item .ci-text { color: var(--muted); line-height: 1.5; }
+  .comment-item .ci-del { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 13px; opacity: 0.5; transition: opacity 0.15s; }
+  .comment-item .ci-del:hover { opacity: 1; color: var(--red); }
 </style>
 </head>
 <body>
+
+<!-- ── AUTH OVERLAY ── -->
+<div id="auth-overlay">
+  <div class="auth-card">
+    <div class="auth-logo">Dizi<span>Listem</span></div>
+    <div class="auth-sub">Erişmek için şifre girin</div>
+    <div class="auth-label">Şifre</div>
+    <input class="auth-input" id="auth-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')tryLogin()" />
+    <div class="auth-err" id="auth-err">Yanlış şifre, tekrar deneyin.</div>
+    <button class="auth-btn" onclick="tryLogin()">Giriş Yap</button>
+    <hr class="auth-divider">
+    <button class="auth-btn visitor" onclick="showNamePicker()">👤 Ziyaretçi olarak gir</button>
+  </div>
+</div>
+
+<!-- ── NAME PICKER ── -->
+<div id="name-overlay">
+  <div class="auth-card">
+    <div class="auth-logo">Dizi<span>Listem</span></div>
+    <div class="auth-sub">Yorum ve puan vermek için isminizi belirleyin</div>
+    <div class="auth-label">Görünen İsim</div>
+    <input class="auth-input" id="visitor-name-input" type="text" placeholder="Adınızı girin..." maxlength="30" onkeydown="if(event.key==='Enter')confirmVisitor()" />
+    <div class="auth-err" id="name-err">Lütfen bir isim girin.</div>
+    <button class="auth-btn" onclick="confirmVisitor()">Devam Et</button>
+    <button class="auth-btn visitor" onclick="closeNamePicker()">← Geri</button>
+  </div>
+</div>
+
 <header>
   <div class="header-top">
     <div class="header-titles">
-      <h1>OFREE<span>Dizi Film Listem</span></h1>
-      <p>İzlediğim dizi ve filmlerin sıralı hali</p>
+      <h1>Dizi<span>Listem</span></h1>
+      <p>Dizi adını yaz, bilgiler otomatik gelsin</p>
     </div>
     <div class="search-wrap" style="margin-top:6px;">
       <input class="search-input" id="search-input" type="text" placeholder="Listede ara..." oninput="handleSearch(this.value)" autocomplete="off" />
@@ -112,6 +260,11 @@
     <div class="stat"><strong id="total-series">0</strong> dizi</div>
     <div class="stat"><strong id="total-movies">0</strong> film</div>
     <div class="stat"><strong id="avg">&#8212;</strong> ort. puan</div>
+    <div id="visitor-badge">
+      <div class="vb-avatar" id="vb-initial">?</div>
+      <span id="vb-name">Ziyaretçi</span>
+      <button class="vb-logout" onclick="logoutVisitor()" title="Çıkış">&#215;</button>
+    </div>
     <span class="sync-status syncing" id="sync-status">baglaniyor...</span>
   </div>
 </header>
@@ -150,30 +303,129 @@
   </div>
 </main>
 <script>
+/* ══════════════════════════════════════════
+   AYARLAR
+══════════════════════════════════════════ */
+const ADMIN_PASSWORD = '1881';
 const OMDB_KEY = 'f0373d3e';
-const FB_URL = 'https://dizi-listesi-default-rtdb.firebaseio.com/diziler';
-let rows = [], nextId = 1;
-let searchTimers = {};
-let activeSuggestions = {};
-let sortByImdb = false;
-let currentTab = 'all';
-let searchQuery = '';
+const FB_URL   = 'https://dizi-listesi-default-rtdb.firebaseio.com/diziler';
+const FB_COMMENTS_URL = 'https://dizi-listesi-default-rtdb.firebaseio.com/yorumlar';
 
+/* ══════════════════════════════════════════
+   DURUM DEĞİŞKENLERİ
+══════════════════════════════════════════ */
+let rows = [], nextId = 1;
+let searchTimers = {}, activeSuggestions = {};
+let sortByImdb = false, currentTab = 'all', searchQuery = '';
+let currentUser = null; // { name, role: 'admin'|'visitor' }
+let allComments = {};   // { rowId: [ {name, rating, text, ts} ] }
+
+/* ══════════════════════════════════════════
+   AUTH — GİRİŞ EKRANI
+══════════════════════════════════════════ */
+function tryLogin() {
+  const pw = document.getElementById('auth-pw').value;
+  if (pw === ADMIN_PASSWORD) {
+    currentUser = { name: 'Admin', role: 'admin' };
+    hideAuthOverlay();
+    applyRole();
+    loadFromFirebase();
+  } else {
+    const err = document.getElementById('auth-err');
+    err.style.display = 'block';
+    document.getElementById('auth-pw').value = '';
+    document.getElementById('auth-pw').focus();
+  }
+}
+
+function showNamePicker() {
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('name-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('visitor-name-input').focus(), 100);
+}
+
+function closeNamePicker() {
+  document.getElementById('name-overlay').classList.remove('show');
+  document.getElementById('auth-overlay').style.display = 'flex';
+}
+
+function confirmVisitor() {
+  const name = document.getElementById('visitor-name-input').value.trim();
+  if (!name) { document.getElementById('name-err').style.display = 'block'; return; }
+  currentUser = { name, role: 'visitor' };
+  document.getElementById('name-overlay').classList.remove('show');
+  hideAuthOverlay();
+  applyRole();
+  loadFromFirebase();
+}
+
+function hideAuthOverlay() {
+  document.getElementById('auth-overlay').style.display = 'none';
+}
+
+function logoutVisitor() {
+  currentUser = null;
+  location.reload();
+}
+
+/* ══════════════════════════════════════════
+   ROL BAZLI UI
+══════════════════════════════════════════ */
+function applyRole() {
+  const isAdmin   = currentUser && currentUser.role === 'admin';
+  const isVisitor = currentUser && currentUser.role === 'visitor';
+
+  // Ziyaretçi rozeti
+  if (isVisitor) {
+    const badge = document.getElementById('visitor-badge');
+    badge.classList.add('show');
+    document.getElementById('vb-name').textContent = currentUser.name;
+    document.getElementById('vb-initial').textContent = currentUser.name.charAt(0).toUpperCase();
+  }
+
+  // Admin rozeti (header'da küçük "Admin" göstergesi)
+  if (isAdmin) {
+    const badge = document.getElementById('visitor-badge');
+    badge.classList.add('show');
+    badge.style.background = 'rgba(192,132,252,0.1)';
+    badge.style.borderColor = 'rgba(192,132,252,0.3)';
+    badge.style.color = 'var(--film-accent)';
+    const av = document.getElementById('vb-initial');
+    av.style.background = 'var(--film-accent)';
+    av.textContent = 'A';
+    document.getElementById('vb-name').textContent = 'Admin';
+  }
+
+  // Admin ekle/sil butonlarını göster/gizle
+  document.querySelectorAll('.add-btn, .del-btn, .tool-btn').forEach(el => {
+    el.style.display = isAdmin ? '' : 'none';
+  });
+}
+
+/* ══════════════════════════════════════════
+   FIREBASE — DİZİLER / FİLMLER
+══════════════════════════════════════════ */
 function setSyncStatus(state) {
   const el = document.getElementById('sync-status');
-  if (state === 'ok') { el.textContent = 'senkronize'; el.className = 'sync-status ok'; }
-  else if (state === 'syncing') { el.textContent = 'kaydediliyor...'; el.className = 'sync-status syncing'; }
-  else { el.textContent = 'baglanti hatasi'; el.className = 'sync-status err'; }
+  if (state === 'ok')       { el.textContent = 'senkronize';    el.className = 'sync-status ok'; }
+  else if (state==='syncing'){ el.textContent = 'kaydediliyor...'; el.className = 'sync-status syncing'; }
+  else                      { el.textContent = 'baglanti hatasi'; el.className = 'sync-status err'; }
 }
 
 async function loadFromFirebase() {
   try {
-    const res = await fetch(FB_URL + '.json');
-    const data = await res.json();
-    if (data) {
-      rows = Object.values(data).sort((a,b) => a.id - b.id);
+    const [rowsRes, commentsRes] = await Promise.all([
+      fetch(FB_URL + '.json'),
+      fetch(FB_COMMENTS_URL + '.json')
+    ]);
+    const rowsData = await rowsRes.json();
+    const commentsData = await commentsRes.json();
+
+    if (rowsData) {
+      rows = Object.values(rowsData).sort((a,b) => a.id - b.id);
       rows.forEach(r => { if (r.id >= nextId) nextId = r.id + 1; if (!r.mediaType) r.mediaType = 'series'; });
     }
+    allComments = commentsData || {};
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('err'); }
   render();
@@ -184,15 +436,128 @@ async function saveToFirebase() {
   try {
     const obj = {};
     rows.forEach(r => { obj['row_' + r.id] = r; });
-    await fetch(FB_URL + '.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
+    await fetch(FB_URL + '.json', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(obj) });
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('err'); }
 }
 
+async function saveComments() {
+  try {
+    await fetch(FB_COMMENTS_URL + '.json', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(allComments) });
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════
+   YORUM & PUANLAMA
+══════════════════════════════════════════ */
+// Ziyaretçinin o satır için seçtiği yıldız (geçici, henüz gönderilmemiş)
+let pendingRatings = {}; // rowId → 1..10
+
+function getComments(rowId) { return allComments[rowId] || []; }
+
+function setRating(rowId, val) {
+  pendingRatings[rowId] = val;
+  // Tüm listlerdeki yıldızları güncelle
+  ['list-series','list-movies','list-series-only','list-movies-only'].forEach(listId => {
+    const starsRow = document.getElementById('stars-' + rowId + '-' + listId);
+    if (!starsRow) return;
+    starsRow.querySelectorAll('.star-btn').forEach((btn, i) => {
+      btn.classList.toggle('lit', i < val);
+    });
+    const lbl = starsRow.querySelector('.star-label');
+    if (lbl) lbl.textContent = val + '/10';
+  });
+}
+
+function sendComment(rowId, listId) {
+  const input = document.getElementById('cinput-' + rowId + '-' + listId);
+  if (!input) return;
+  const text = input.value.trim();
+  const rating = pendingRatings[rowId] || 0;
+  if (!text && !rating) return;
+
+  const comment = {
+    name: currentUser.name,
+    rating,
+    text,
+    ts: Date.now()
+  };
+  if (!allComments[rowId]) allComments[rowId] = [];
+  allComments[rowId].push(comment);
+  delete pendingRatings[rowId];
+
+  // Tüm paralel listleri güncelle
+  ['list-series','list-movies','list-series-only','list-movies-only'].forEach(lId => {
+    const panel = document.getElementById('vpanel-' + rowId + '-' + lId);
+    if (panel) renderVisitorPanel(panel, rowId, lId);
+  });
+  saveComments();
+}
+
+function deleteComment(rowId, idx) {
+  if (!allComments[rowId]) return;
+  allComments[rowId].splice(idx, 1);
+  if (allComments[rowId].length === 0) delete allComments[rowId];
+  ['list-series','list-movies','list-series-only','list-movies-only'].forEach(lId => {
+    const panel = document.getElementById('vpanel-' + rowId + '-' + lId);
+    if (panel) renderVisitorPanel(panel, rowId, lId);
+  });
+  saveComments();
+}
+
+function renderVisitorPanel(panel, rowId, listId) {
+  const isAdmin   = currentUser && currentUser.role === 'admin';
+  const isVisitor = currentUser && currentUser.role === 'visitor';
+  const comments  = getComments(rowId);
+  const curRating = pendingRatings[rowId] || 0;
+
+  let html = '';
+
+  // Yıldız satırı (sadece ziyaretçilere)
+  if (isVisitor) {
+    html += '<div class="stars-row" id="stars-' + rowId + '-' + listId + '">';
+    for (let i = 1; i <= 10; i++) {
+      html += '<button class="star-btn' + (i <= curRating ? ' lit' : '') + '" onclick="setRating(' + rowId + ',' + i + ')" title="' + i + '">&#9733;</button>';
+    }
+    html += '<span class="star-label">' + (curRating ? curRating + '/10' : '10 üzerinden puan ver') + '</span></div>';
+    html += '<div class="comment-wrap">' +
+      '<textarea class="comment-input" id="cinput-' + rowId + '-' + listId + '" placeholder="Yorumunuzu yazın..." rows="1" ' +
+        'onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();sendComment(' + rowId + ',\'' + listId + '\');}"></textarea>' +
+      '<button class="comment-send" onclick="sendComment(' + rowId + ',\'' + listId + '\')">Gönder</button>' +
+    '</div>';
+  }
+
+  // Yorumlar listesi (herkese görünür, en az 1 yorum varsa)
+  if (comments.length > 0) {
+    html += '<div class="comments-list">';
+    comments.forEach((c, idx) => {
+      const stars = c.rating ? '★'.repeat(c.rating) + ' ' + c.rating + '/10' : '';
+      const canDel = isAdmin || (isVisitor && c.name === currentUser.name);
+      html += '<div class="comment-item">' +
+        '<div class="ci-header">' +
+          '<span class="ci-name">' + esc(c.name) + '</span>' +
+          (stars ? '<span class="ci-stars">' + stars + '</span>' : '') +
+          (canDel ? '<button class="ci-del" onclick="deleteComment(' + rowId + ',' + idx + ')" title="Sil">&#215;</button>' : '') +
+        '</div>' +
+        (c.text ? '<div class="ci-text">' + esc(c.text) + '</div>' : '') +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  panel.innerHTML = html;
+  // Paneli göster/gizle
+  const hasContent = isVisitor || comments.length > 0;
+  panel.classList.toggle('show', hasContent);
+}
+
+/* ══════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════ */
 function addRow(mediaType) {
   if (!mediaType) mediaType = 'series';
   const id = nextId++;
-  rows.push({ id, name: '', genre: '', imdb: '', year: '', loading: false, error: false, mediaType });
+  rows.push({ id, name:'', genre:'', imdb:'', year:'', loading:false, error:false, mediaType });
   render();
   setTimeout(() => { const inp = document.getElementById('inp-' + id); if(inp) inp.focus(); }, 50);
 }
@@ -215,46 +580,58 @@ function render() {
   const focusedId = focused ? focused.id : null;
   const seriesRows = rows.filter(r => r.mediaType === 'series');
   const movieRows  = rows.filter(r => r.mediaType === 'movies');
-  renderList('list-series',       getSortedRows(seriesRows));
-  renderList('list-movies',       getSortedRows(movieRows));
-  renderList('list-series-only',  getSortedRows(seriesRows));
-  renderList('list-movies-only',  getSortedRows(movieRows));
-  const sc = seriesRows.filter(r=>r.name).length;
-  const mc = movieRows.filter(r=>r.name).length;
-  document.getElementById('series-count').textContent = sc ? sc + ' adet' : '';
-  document.getElementById('movie-count').textContent  = mc ? mc + ' adet' : '';
+  renderList('list-series',      getSortedRows(seriesRows));
+  renderList('list-movies',      getSortedRows(movieRows));
+  renderList('list-series-only', getSortedRows(seriesRows));
+  renderList('list-movies-only', getSortedRows(movieRows));
+  document.getElementById('series-count').textContent = seriesRows.filter(r=>r.name).length ? seriesRows.filter(r=>r.name).length + ' adet' : '';
+  document.getElementById('movie-count').textContent  = movieRows.filter(r=>r.name).length  ? movieRows.filter(r=>r.name).length  + ' adet' : '';
   if (focusedId) { const el = document.getElementById(focusedId); if (el) { el.focus(); const len = el.value.length; el.setSelectionRange(len,len); } }
   updateStats();
   applySearch();
+  // Admin buton görünürlüğünü koru
+  if (currentUser) applyRole();
 }
 
 function renderList(listId, items) {
   const list = document.getElementById(listId);
   if (!list) return;
+  const isAdmin   = currentUser && currentUser.role === 'admin';
+  const isVisitor = currentUser && currentUser.role === 'visitor';
   list.innerHTML = '';
   items.forEach((row, i) => {
     const div = document.createElement('div');
     div.className = 'row ' + (row.mediaType === 'movies' ? 'is-movie' : 'is-series');
+
+    // Ad inputu — ziyaretçilerde readonly
+    const inputAttrs = isAdmin
+      ? 'oninput="handleInput(' + row.id + ', this.value)" onblur="handleBlur(' + row.id + ', this.value)" onkeydown="handleKeydown(event,' + row.id + ')"'
+      : 'readonly style="cursor:default;color:var(--text)"';
+
     div.innerHTML =
       '<div class="row-num">' + (i+1) + '</div>' +
       '<div class="row-body" id="body-' + row.id + '-' + listId + '">' +
         '<input class="name-input" id="inp-' + row.id + '" value="' + esc(row.name) + '" ' +
-          'placeholder="' + (row.mediaType === 'movies' ? 'Film adi girin...' : 'Dizi adi girin...') + '" ' +
-          'autocomplete="off" ' +
-          'oninput="handleInput(' + row.id + ', this.value)" ' +
-          'onblur="handleBlur(' + row.id + ', this.value)" ' +
-          'onkeydown="handleKeydown(event, ' + row.id + ')" />' +
+          'placeholder="' + (row.mediaType==='movies' ? 'Film adi girin...' : 'Dizi adi girin...') + '" ' +
+          'autocomplete="off" ' + inputAttrs + ' />' +
         '<div class="meta" id="meta-' + row.id + '-' + listId + '">' + metaHTML(row) + '</div>' +
+        '<div class="row-visitor-panel" id="vpanel-' + row.id + '-' + listId + '"></div>' +
       '</div>' +
-      '<button class="del-btn" onmousedown="event.preventDefault()" onclick="deleteRow(' + row.id + ')" title="Sil">&#215;</button>';
+      '<button class="del-btn" onmousedown="event.preventDefault()" onclick="deleteRow(' + row.id + ')" title="Sil" style="display:' + (isAdmin ? '' : 'none') + '">&#215;</button>';
+
     list.appendChild(div);
+
+    // Visitor paneli doldur
+    const panel = document.getElementById('vpanel-' + row.id + '-' + listId);
+    if (panel) renderVisitorPanel(panel, row.id, listId);
+
     if (activeSuggestions[row.id]) renderSuggestionsInBody('body-' + row.id + '-' + listId, row.id, activeSuggestions[row.id]);
   });
 }
 
 function metaHTML(row) {
   if (row.loading) return '<span class="spinner"></span>';
-  if (row.error) return '<span class="err">bulunamadi</span>';
+  if (row.error)   return '<span class="err">bulunamadi</span>';
   let html = '';
   const isM = row.mediaType === 'movies';
   if (row.genre) html += '<span class="badge genre' + (isM ? ' movie' : '') + '">' + esc(row.genre) + '</span>';
@@ -264,9 +641,9 @@ function metaHTML(row) {
 }
 
 function updateStats() {
-  document.getElementById('total-series').textContent = rows.filter(r => r.name && r.mediaType === 'series').length;
-  document.getElementById('total-movies').textContent = rows.filter(r => r.name && r.mediaType === 'movies').length;
-  const scores = rows.filter(r => r.imdb && r.imdb !== 'N/A').map(r => parseFloat(r.imdb)).filter(n => !isNaN(n));
+  document.getElementById('total-series').textContent = rows.filter(r => r.name && r.mediaType==='series').length;
+  document.getElementById('total-movies').textContent = rows.filter(r => r.name && r.mediaType==='movies').length;
+  const scores = rows.filter(r => r.imdb && r.imdb!=='N/A').map(r => parseFloat(r.imdb)).filter(n => !isNaN(n));
   document.getElementById('avg').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
 }
 
@@ -274,13 +651,10 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 function setTab(tab) {
   currentTab = tab;
-  document.getElementById('view-all').style.display    = tab === 'all'    ? '' : 'none';
-  document.getElementById('view-series').style.display = tab === 'series' ? '' : 'none';
-  document.getElementById('view-movies').style.display = tab === 'movies' ? '' : 'none';
-  ['all','series','movies'].forEach(t => {
-    const btn = document.getElementById('tab-' + t);
-    btn.classList.toggle('active', t === tab);
-  });
+  document.getElementById('view-all').style.display    = tab==='all'    ? '' : 'none';
+  document.getElementById('view-series').style.display = tab==='series' ? '' : 'none';
+  document.getElementById('view-movies').style.display = tab==='movies' ? '' : 'none';
+  ['all','series','movies'].forEach(t => document.getElementById('tab-'+t).classList.toggle('active', t===tab));
 }
 
 function toggleSort() {
@@ -300,25 +674,29 @@ function clearSearch() {
   searchQuery = '';
   document.getElementById('search-input').value = '';
   document.getElementById('search-clear').style.display = 'none';
-  document.getElementById('search-icon').style.display = 'block';
+  document.getElementById('search-icon').style.display  = 'block';
   applySearch();
 }
 
 function applySearch() {
   let visible = 0;
   document.querySelectorAll('.row').forEach(rowEl => {
-    const inp = rowEl.querySelector('.name-input');
-    const genreEl = rowEl.querySelector('.badge.genre');
-    const name = inp ? inp.value.toLowerCase() : '';
-    const genre = genreEl ? genreEl.textContent.toLowerCase() : '';
-    const match = !searchQuery || name.includes(searchQuery) || genre.includes(searchQuery);
+    const inp    = rowEl.querySelector('.name-input');
+    const genre  = rowEl.querySelector('.badge.genre');
+    const name   = inp   ? inp.value.toLowerCase()  : '';
+    const gen    = genre ? genre.textContent.toLowerCase() : '';
+    const match  = !searchQuery || name.includes(searchQuery) || gen.includes(searchQuery);
     rowEl.style.display = match ? '' : 'none';
     if (match) visible++;
   });
-  document.getElementById('no-results').style.display = (searchQuery && visible === 0) ? 'block' : 'none';
+  document.getElementById('no-results').style.display = (searchQuery && visible===0) ? 'block' : 'none';
 }
 
+/* ══════════════════════════════════════════
+   OMDB — SADECE ADMİN
+══════════════════════════════════════════ */
 function handleInput(id, val) {
+  if (!currentUser || currentUser.role !== 'admin') return;
   clearTimeout(searchTimers[id]);
   const trimmed = val.trim();
   if (trimmed.length < 2) { delete activeSuggestions[id]; hideSuggestions(id); return; }
@@ -327,13 +705,13 @@ function handleInput(id, val) {
 }
 
 async function fetchSuggestions(id, query) {
-  const row = getRow(id);
-  const type = (row && row.mediaType === 'movies') ? 'movie' : 'series';
+  const row  = getRow(id);
+  const type = (row && row.mediaType==='movies') ? 'movie' : 'series';
   try {
-    const res = await fetch('https://www.omdbapi.com/?s=' + encodeURIComponent(query) + '&type=' + type + '&apikey=' + OMDB_KEY);
+    const res  = await fetch('https://www.omdbapi.com/?s=' + encodeURIComponent(query) + '&type=' + type + '&apikey=' + OMDB_KEY);
     const data = await res.json();
-    if (data.Response === 'True' && data.Search) {
-      activeSuggestions[id] = data.Search.slice(0, 5);
+    if (data.Response==='True' && data.Search) {
+      activeSuggestions[id] = data.Search.slice(0,5);
       ['list-series','list-movies','list-series-only','list-movies-only'].forEach(listId => {
         const bodyId = 'body-' + id + '-' + listId;
         if (document.getElementById(bodyId)) renderSuggestionsInBody(bodyId, id, activeSuggestions[id]);
@@ -362,12 +740,12 @@ function renderSuggestionsInBody(bodyId, id, items) {
     const div = document.createElement('div');
     div.className = 'suggestion-item';
     div.innerHTML =
-      (item.Poster && item.Poster !== 'N/A'
+      (item.Poster && item.Poster!=='N/A'
         ? '<img class="suggestion-poster" src="' + item.Poster + '" alt="" loading="lazy">'
         : '<div class="suggestion-poster-placeholder">&#127916;</div>') +
       '<div class="suggestion-info">' +
         '<div class="suggestion-title">' + esc(item.Title) + '</div>' +
-        '<div class="suggestion-meta">' + (item.Year||'') + ' &middot; ' + (item.Type === 'movie' ? 'Film' : 'Dizi') + '</div>' +
+        '<div class="suggestion-meta">' + (item.Year||'') + ' &middot; ' + (item.Type==='movie'?'Film':'Dizi') + '</div>' +
       '</div>';
     div.onmousedown = (e) => { e.preventDefault(); selectSuggestion(id, item); };
     box.appendChild(div);
@@ -382,28 +760,22 @@ function hideSuggestions(id) {
 }
 
 async function selectSuggestion(id, item) {
-  const row = getRow(id);
-  if (!row) return;
-  hideSuggestions(id);
-  delete activeSuggestions[id];
+  const row = getRow(id); if (!row) return;
+  hideSuggestions(id); delete activeSuggestions[id];
   document.querySelectorAll('#inp-' + id).forEach(inp => inp.value = item.Title);
-  row.name = item.Title;
-  row.loading = true; row.genre = ''; row.imdb = ''; row.year = ''; row.error = false;
+  row.name = item.Title; row.loading = true; row.genre = ''; row.imdb = ''; row.year = ''; row.error = false;
   updateAllMeta(id, row);
   try {
-    const res = await fetch('https://www.omdbapi.com/?i=' + item.imdbID + '&apikey=' + OMDB_KEY);
+    const res  = await fetch('https://www.omdbapi.com/?i=' + item.imdbID + '&apikey=' + OMDB_KEY);
     const data = await res.json();
-    if (data.Response === 'True') {
+    if (data.Response==='True') {
       row.genre = (data.Genre||'').split(',')[0].trim();
       row.imdb  = data.imdbRating || '';
       row.year  = data.Year || '';
       row.error = false;
     } else { row.error = true; }
   } catch(e) { row.error = true; }
-  row.loading = false;
-  updateAllMeta(id, row);
-  updateStats();
-  saveToFirebase();
+  row.loading = false; updateAllMeta(id, row); updateStats(); saveToFirebase();
 }
 
 function updateAllMeta(id, row) {
@@ -414,54 +786,51 @@ function updateAllMeta(id, row) {
 }
 
 function handleKeydown(e, id) {
-  if (e.key === 'Escape') { hideSuggestions(id); delete activeSuggestions[id]; }
-  if (e.key === 'Enter')  { hideSuggestions(id); delete activeSuggestions[id]; e.target.blur(); }
+  if (e.key==='Escape') { hideSuggestions(id); delete activeSuggestions[id]; }
+  if (e.key==='Enter')  { hideSuggestions(id); delete activeSuggestions[id]; e.target.blur(); }
 }
 
 function handleBlur(id, val) {
   setTimeout(() => {
     hideSuggestions(id); delete activeSuggestions[id];
-    const row = getRow(id);
-    if (!row) return;
+    const row = getRow(id); if (!row) return;
     const trimmed = val.trim();
-    if (!trimmed || trimmed === row.name) return;
-    row.name = trimmed;
-    fetchDetails(id, trimmed);
+    if (!trimmed || trimmed===row.name) return;
+    row.name = trimmed; fetchDetails(id, trimmed);
   }, 150);
 }
 
 async function fetchDetails(id, name) {
-  const row = getRow(id);
-  if (!row || row.genre) return;
-  const type = row.mediaType === 'movies' ? 'movie' : 'series';
-  row.loading = true; row.error = false;
-  updateAllMeta(id, row);
+  const row = getRow(id); if (!row || row.genre) return;
+  const type = row.mediaType==='movies' ? 'movie' : 'series';
+  row.loading = true; row.error = false; updateAllMeta(id, row);
   try {
-    const res = await fetch('https://www.omdbapi.com/?t=' + encodeURIComponent(name) + '&type=' + type + '&apikey=' + OMDB_KEY);
+    const res  = await fetch('https://www.omdbapi.com/?t=' + encodeURIComponent(name) + '&type=' + type + '&apikey=' + OMDB_KEY);
     const data = await res.json();
-    if (data.Response === 'True') {
+    if (data.Response==='True') {
       row.genre = (data.Genre||'').split(',')[0].trim();
       row.imdb  = data.imdbRating || '';
       row.year  = data.Year || '';
       row.error = false;
     } else { row.error = true; }
   } catch(e) { row.error = true; }
-  row.loading = false;
-  updateAllMeta(id, row);
-  updateStats();
-  saveToFirebase();
+  row.loading = false; updateAllMeta(id, row); updateStats(); saveToFirebase();
 }
 
 function exportCSV() {
   const lines = ['#,Ad,Tur,IMDb,Yil,Tip'];
   rows.filter(r => r.name).forEach((r,i) => {
-    lines.push([(i+1), '"'+r.name+'"', '"'+(r.genre||'')+'"', '"'+(r.imdb||'')+'"', '"'+(r.year||'')+'"', '"'+(r.mediaType==='movies'?'Film':'Dizi')+'"'].join(','));
+    lines.push([(i+1),'"'+r.name+'"','"'+(r.genre||'')+'"','"'+(r.imdb||'')+'"','"'+(r.year||'')+'"','"'+(r.mediaType==='movies'?'Film':'Dizi')+'"'].join(','));
   });
   const blob = new Blob(['\uFEFF'+lines.join('\n')], {type:'text/csv;charset=utf-8;'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'listem.csv'; a.click();
 }
 
-loadFromFirebase();
+/* ══════════════════════════════════════════
+   BAŞLAT — auth ekranı otomatik gösterilir,
+   loadFromFirebase auth sonrası çağrılır
+══════════════════════════════════════════ */
+// Auth overlay zaten HTML'de görünür durumdadır.
 </script>
 </body>
 </html>
