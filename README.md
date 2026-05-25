@@ -1,1 +1,1 @@
-# dizi-listesi
+# dizi-film-listesi
