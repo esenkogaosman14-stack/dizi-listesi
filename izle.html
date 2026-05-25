@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dizi Listem</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+    --text: #f0efe8; --muted: #7c7b84; --accent: #c8f060;
+    --accent-dim: rgba(200,240,96,0.12);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { padding: 48px 24px 24px; border-bottom: 0.5px solid var(--border); background: linear-gradient(180deg, #111116 0%, var(--bg) 100%); }
+  header h1 { font-family: 'Syne', sans-serif; font-size: clamp(28px, 6vw, 42px); font-weight: 700; letter-spacing: -0.02em; }
+  header h1 span { color: var(--accent); }
+  header p { margin-top: 8px; font-size: 14px; color: var(--muted); font-weight: 300; }
+  .stats { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+  .stat { font-size: 13px; color: var(--muted); }
+  .stat strong { color: var(--text); font-weight: 500; font-size: 15px; margin-right: 4px; }
+  .readonly-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.05); color: var(--muted); border: 0.5px solid var(--border2); margin-left: auto; }
+  main { padding: 24px; max-width: 700px; margin: 0 auto; }
+  .list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .row {
+    background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px;
+    padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr;
+    gap: 12px; align-items: center; animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  .row-num { font-family: 'Syne', sans-serif; font-size: 12px; color: var(--muted); text-align: center; font-weight: 600; }
+  .row-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .row-name { font-size: 15px; font-weight: 500; color: var(--text); }
+  .meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--surface2); color: var(--muted); border: 0.5px solid var(--border); white-space: nowrap; }
+  .badge.genre { background: var(--accent-dim); color: var(--accent); border-color: rgba(200,240,96,0.2); }
+  .badge.imdb { background: rgba(255,180,0,0.1); color: #e8b000; border-color: rgba(255,180,0,0.2); }
+  .badge.year { background: rgba(96,184,240,0.1); color: #60b8f0; border-color: rgba(96,184,240,0.2); }
+  .empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
+  .spinner-page { display: flex; align-items: center; justify-content: center; padding: 48px; }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 480px) { header { padding: 32px 16px 20px; } main { padding: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Dizi<span>Listem</span></h1>
+  <p>İzlediğim diziler</p>
+  <div class="stats">
+    <div class="stat"><strong id="total">0</strong> dizi</div>
+    <div class="stat"><strong id="avg">—</strong> ort. puan</div>
+    <span class="readonly-badge">👁 görüntüleme modu</span>
+  </div>
+</header>
+<main>
+  <div class="list" id="list">
+    <div class="spinner-page"><div class="spinner"></div></div>
+  </div>
+</main>
+<script>
+const FB_URL = 'https://dizi-listesi-default-rtdb.firebaseio.com/diziler';
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function metaHTML(row) {
+  let html = '';
+  if (row.genre) html += `<span class="badge genre">${esc(row.genre)}</span>`;
+  if (row.imdb)  html += `<span class="badge imdb">★ ${esc(row.imdb)}</span>`;
+  if (row.year)  html += `<span class="badge year">${esc(row.year)}</span>`;
+  return html;
+}
+
+async function load() {
+  try {
+    const res = await fetch(FB_URL + '.json');
+    const data = await res.json();
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    if (!data) { list.innerHTML = '<div class="empty">Henüz dizi eklenmemiş.</div>'; return; }
+    const rows = Object.values(data).filter(r => r.name).sort((a,b) => a.id - b.id);
+    if (!rows.length) { list.innerHTML = '<div class="empty">Henüz dizi eklenmemiş.</div>'; return; }
+    rows.forEach((row, i) => {
+      const div = document.createElement('div');
+      div.className = 'row';
+      div.innerHTML = `
+        <div class="row-num">${i+1}</div>
+        <div class="row-body">
+          <div class="row-name">${esc(row.name)}</div>
+          <div class="meta">${metaHTML(row)}</div>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+    const scores = rows.filter(r => r.imdb && r.imdb !== 'N/A').map(r => parseFloat(r.imdb)).filter(n => !isNaN(n));
+    document.getElementById('total').textContent = rows.length;
+    document.getElementById('avg').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
+  } catch(e) {
+    document.getElementById('list').innerHTML = '<div class="empty">Veriler yüklenemedi.</div>';
+  }
+}
+
+load();
+</script>
+</body>
+</html>
