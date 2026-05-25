@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dizi Listem</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+    --text: #f0efe8; --muted: #7c7b84; --accent: #c8f060;
+    --accent-dim: rgba(200,240,96,0.12); --red: #ff5f5f;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { padding: 48px 24px 24px; border-bottom: 0.5px solid var(--border); background: linear-gradient(180deg, #111116 0%, var(--bg) 100%); }
+  header h1 { font-family: 'Syne', sans-serif; font-size: clamp(28px, 6vw, 42px); font-weight: 700; letter-spacing: -0.02em; }
+  header h1 span { color: var(--accent); }
+  header p { margin-top: 8px; font-size: 14px; color: var(--muted); font-weight: 300; }
+  .stats { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+  .stat { font-size: 13px; color: var(--muted); }
+  .stat strong { color: var(--text); font-weight: 500; font-size: 15px; margin-right: 4px; }
+  .sync-status { font-size: 12px; padding: 3px 10px; border-radius: 20px; margin-left: auto; }
+  .sync-status.ok { background: rgba(200,240,96,0.1); color: var(--accent); }
+  .sync-status.syncing { background: rgba(255,255,255,0.05); color: var(--muted); }
+  .sync-status.err { background: rgba(255,95,95,0.1); color: var(--red); }
+  main { padding: 24px; max-width: 700px; margin: 0 auto; }
+  .list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .row {
+    background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px;
+    padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr auto;
+    gap: 12px; align-items: center; transition: border-color 0.2s; animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  .row:focus-within { border-color: var(--border2); }
+  .row-num { font-family: 'Syne', sans-serif; font-size: 12px; color: var(--muted); text-align: center; font-weight: 600; }
+  .row-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .name-input { background: transparent; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: var(--text); width: 100%; }
+  .name-input::placeholder { color: var(--muted); font-weight: 300; }
+  .meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--surface2); color: var(--muted); border: 0.5px solid var(--border); white-space: nowrap; }
+  .badge.genre { background: var(--accent-dim); color: var(--accent); border-color: rgba(200,240,96,0.2); }
+  .badge.imdb { background: rgba(255,180,0,0.1); color: #e8b000; border-color: rgba(255,180,0,0.2); }
+  .badge.year { background: rgba(96,184,240,0.1); color: #60b8f0; border-color: rgba(96,184,240,0.2); }
+  .spinner { width: 13px; height: 13px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .del-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; line-height: 1; padding: 4px; border-radius: 8px; opacity: 0.5; transition: opacity 0.15s, color 0.15s; }
+  .del-btn:hover { opacity: 1; color: var(--red); }
+  .add-btn { width: 100%; padding: 14px; border: 0.5px dashed var(--border2); border-radius: 14px; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s, color 0.15s; margin-bottom: 16px; }
+  .add-btn:hover { background: var(--surface); color: var(--text); }
+  .toolbar { display: flex; gap: 8px; justify-content: flex-end; }
+  .tool-btn { padding: 9px 16px; border-radius: 10px; border: 0.5px solid var(--border2); background: var(--surface); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .tool-btn:hover { background: var(--surface2); color: var(--text); }
+  .err { font-size: 11px; color: var(--red); }
+  @media (max-width: 480px) { header { padding: 32px 16px 20px; } main { padding: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Dizi<span>Listem</span></h1>
+  <p>Dizi adını yaz, bilgiler otomatik gelsin</p>
+  <div class="stats">
+    <div class="stat"><strong id="total">0</strong> dizi</div>
+    <div class="stat"><strong id="avg">—</strong> ort. puan</div>
+    <span class="sync-status syncing" id="sync-status">bağlanıyor...</span>
+  </div>
+</header>
+<main>
+  <div class="list" id="list"></div>
+  <button class="add-btn" onclick="addRow()">+ Yeni dizi ekle</button>
+  <div class="toolbar">
+    <button class="tool-btn" onclick="exportCSV()">⬇ CSV indir</button>
+  </div>
+</main>
+<script>
+const OMDB_KEY = 'f0373d3e';
+const FB_URL = 'https://dizi-listesi-default-rtdb.firebaseio.com/diziler';
+let rows = [], nextId = 1;
+const cache = {};
+
+function setSyncStatus(state) {
+  const el = document.getElementById('sync-status');
+  if (state === 'ok') { el.textContent = '✓ senkronize'; el.className = 'sync-status ok'; }
+  else if (state === 'syncing') { el.textContent = 'kaydediliyor...'; el.className = 'sync-status syncing'; }
+  else { el.textContent = 'bağlantı hatası'; el.className = 'sync-status err'; }
+}
+
+async function loadFromFirebase() {
+  try {
+    const res = await fetch(FB_URL + '.json');
+    const data = await res.json();
+    if (data) {
+      rows = Object.values(data).sort((a,b) => a.id - b.id);
+      rows.forEach(r => { if (r.id >= nextId) nextId = r.id + 1; });
+    }
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('err'); }
+  render();
+}
+
+async function saveToFirebase() {
+  setSyncStatus('syncing');
+  try {
+    const obj = {};
+    rows.forEach(r => { obj['row_' + r.id] = r; });
+    await fetch(FB_URL + '.json', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(obj)
+    });
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('err'); }
+}
+
+function addRow(name='', genre='', imdb='', year='') {
+  const id = nextId++;
+  rows.push({ id, name, genre, imdb, year, loading: false, error: false });
+  render();
+  if (!name) setTimeout(() => { const inp = document.getElementById('inp-'+id); if(inp) inp.focus(); }, 50);
+}
+
+function deleteRow(id) {
+  rows = rows.filter(r => r.id !== id);
+  render();
+  saveToFirebase();
+}
+
+function render() {
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  rows.forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = 'row';
+    div.innerHTML = `
+      <div class="row-num">${i+1}</div>
+      <div class="row-body">
+        <input class="name-input" id="inp-${row.id}" value="${esc(row.name)}" placeholder="Dizi adını girin..."
+          onblur="handleBlur(${row.id}, this.value)"
+          onkeydown="if(event.key==='Enter') this.blur();"
+        />
+        <div class="meta">${metaHTML(row)}</div>
+      </div>
+      <button class="del-btn" onclick="deleteRow(${row.id})" title="Sil">×</button>
+    `;
+    list.appendChild(div);
+  });
+  updateStats();
+}
+
+function metaHTML(row) {
+  if (row.loading) return '<span class="spinner"></span>';
+  if (row.error) return '<span class="err">bulunamadı — İngilizce deneyin</span>';
+  let html = '';
+  if (row.genre) html += `<span class="badge genre">${esc(row.genre)}</span>`;
+  if (row.imdb)  html += `<span class="badge imdb">★ ${esc(row.imdb)}</span>`;
+  if (row.year)  html += `<span class="badge year">${esc(row.year)}</span>`;
+  return html;
+}
+
+function updateStats() {
+  document.getElementById('total').textContent = rows.filter(r => r.name).length;
+  const scores = rows.filter(r => r.imdb && r.imdb !== 'N/A').map(r => parseFloat(r.imdb)).filter(n => !isNaN(n));
+  document.getElementById('avg').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function handleBlur(id, val) {
+  const row = rows.find(r => r.id === id);
+  if (!row) return;
+  const trimmed = val.trim();
+  if (!trimmed || trimmed === row.name) return;
+  row.name = trimmed;
+  const key = trimmed.toLowerCase();
+  if (cache[key]) { Object.assign(row, cache[key]); render(); saveToFirebase(); return; }
+  row.loading = true; row.genre = ''; row.imdb = ''; row.year = ''; row.error = false;
+  render();
+  try {
+    const res = await fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(trimmed)}&type=series&apikey=${OMDB_KEY}`);
+    const data = await res.json();
+    if (data.Response === 'True') {
+      row.genre = (data.Genre || '').split(',')[0].trim();
+      row.imdb  = data.imdbRating || '';
+      row.year  = data.Year || '';
+      row.error = false;
+      cache[key] = { genre: row.genre, imdb: row.imdb, year: row.year };
+    } else { row.error = true; }
+  } catch(e) { row.error = true; }
+  row.loading = false;
+  render();
+  saveToFirebase();
+}
+
+function exportCSV() {
+  const lines = ['#,Dizi Adı,Tür,IMDb,Yıl'];
+  rows.filter(r => r.name).forEach((r,i) => lines.push(`${i+1},"${r.name}","${r.genre}","${r.imdb}","${r.year}"`));
+  const blob = new Blob(['\uFEFF'+lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'dizilerim.csv'; a.click();
+}
+
+loadFromFirebase();
+</script>
+</body>
+</html>
