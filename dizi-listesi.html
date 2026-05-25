@@ -464,6 +464,7 @@ async function loadVisitorCount() {
     document.getElementById('total-visitors').textContent = count;
   } catch(e) {}
 }
+async function saveComments() {
   try {
     await fetch(FB_COMMENTS_URL + '.json', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(allComments) });
   } catch(e) {}
