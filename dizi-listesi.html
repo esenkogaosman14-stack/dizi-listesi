@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -366,6 +365,8 @@
 ══════════════════════════════════════════ */
 const ADMIN_PASSWORD = '1881';
 const OMDB_KEY = 'f0373d3e';
+const CLOUDINARY_CLOUD = 'drmg8yhma';
+const CLOUDINARY_PRESET = 'rgqy0uyz';
 const FB_URL   = 'https://dizi-listesi-default-rtdb.firebaseio.com/diziler';
 const FB_COMMENTS_URL  = 'https://dizi-listesi-default-rtdb.firebaseio.com/yorumlar';
 const FB_VISITORS_URL  = 'https://dizi-listesi-default-rtdb.firebaseio.com/ziyaretciler';
@@ -931,14 +932,31 @@ let nextPhotoId = 1;
 function handlePhotoUpload(event) {
   const files = Array.from(event.target.files);
   files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const id = nextPhotoId++;
-      photos.push({ id, src: e.target.result, name: file.name, ts: Date.now() });
+    const id = nextPhotoId++;
+    const tmpPhoto = { id, src: null, name: file.name, ts: Date.now(), uploading: true };
+    photos.push(tmpPhoto);
+    renderPhotoTab();
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+    formData.append('folder', 'ofree');
+
+    fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', {
+      method: 'POST', body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      const p = photos.find(p => p.id === id);
+      if (p) { p.src = data.secure_url; p.uploading = false; }
       savePhotosToFirebase();
       renderPhotoTab();
-    };
-    reader.readAsDataURL(file);
+    })
+    .catch(() => {
+      photos = photos.filter(p => p.id !== id);
+      renderPhotoTab();
+      alert('Fotoğraf yüklenemedi, tekrar dene.');
+    });
   });
   event.target.value = '';
 }
@@ -970,9 +988,16 @@ function renderPhotoTab() {
     card.className = 'photo-card';
 
     // DOM ile oluştur — string birleştirme yok
-    const img = document.createElement('img');
-    img.src = photo.src; img.alt = photo.name; img.loading = 'lazy';
-    card.appendChild(img);
+    if (photo.uploading) {
+      const loader = document.createElement('div');
+      loader.style.cssText = 'height:120px;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--muted);font-size:13px;gap:8px;';
+      loader.innerHTML = '<span class="spinner"></span> Yükleniyor...';
+      card.appendChild(loader);
+    } else {
+      const img = document.createElement('img');
+      img.src = photo.src; img.alt = photo.name; img.loading = 'lazy';
+      card.appendChild(img);
+    }
 
     const overlay = document.createElement('div');
     overlay.className = 'photo-card-overlay';
@@ -1113,9 +1138,10 @@ function deletePhotoComment(photoId, idx) {
 
 async function savePhotosToFirebase() {
   try {
-    // src (base64) büyük olduğu için meta+src birlikte kaydet
     const obj = {};
-    photos.forEach(p => { obj['p_' + p.id] = p; });
+    photos.filter(p => p.src && !p.uploading).forEach(p => {
+      obj['p_' + p.id] = { id: p.id, src: p.src, name: p.name, ts: p.ts };
+    });
     await fetch('https://dizi-listesi-default-rtdb.firebaseio.com/fotolar.json',
       { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(obj) });
   } catch(e) {}
