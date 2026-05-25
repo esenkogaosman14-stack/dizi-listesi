@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -955,67 +956,123 @@ function renderPhotoTab() {
   const empty   = document.getElementById('photo-empty');
   const isAdmin   = currentUser && currentUser.role === 'admin';
   const isVisitor = currentUser && currentUser.role === 'visitor';
-
-  // Admin yükleme butonu
   const adminHeader = document.getElementById('photo-tab-header-admin');
   if (adminHeader) adminHeader.style.display = isAdmin ? '' : 'none';
-
   if (!masonry) return;
   masonry.innerHTML = '';
-
-  if (photos.length === 0) {
-    empty.style.display = 'block';
-    return;
-  }
+  if (photos.length === 0) { empty.style.display = 'block'; return; }
   empty.style.display = 'none';
 
-  photos.forEach(photo => {
+  photos.forEach(function(photo) {
     const comments = photoComments[photo.id] || [];
     const pending  = photoPendingRatings[photo.id] || 0;
     const card = document.createElement('div');
     card.className = 'photo-card';
 
-    // Resim + overlay
-    let html = '<img src="' + photo.src + '" alt="' + esc(photo.name) + '" loading="lazy">' +
-      '<div class="photo-card-overlay"></div>' +
-      '<div class="photo-card-actions">' +
-        '<span class="photo-card-name">' + esc(photo.name) + '</span>' +
-        (isAdmin ? '<button class="photo-card-del" onclick="deletePhoto(' + photo.id + ')">Sil</button>' : '') +
-      '</div>';
+    // DOM ile oluştur — string birleştirme yok
+    const img = document.createElement('img');
+    img.src = photo.src; img.alt = photo.name; img.loading = 'lazy';
+    card.appendChild(img);
 
-    // Yorumlar bölümü
+    const overlay = document.createElement('div');
+    overlay.className = 'photo-card-overlay';
+    card.appendChild(overlay);
+
+    const actions = document.createElement('div');
+    actions.className = 'photo-card-actions';
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'photo-card-name';
+    nameSpan.textContent = photo.name;
+    actions.appendChild(nameSpan);
+    if (isAdmin) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'photo-card-del';
+      delBtn.textContent = 'Sil';
+      delBtn.onclick = function() { deletePhoto(photo.id); };
+      actions.appendChild(delBtn);
+    }
+    card.appendChild(actions);
+
+    // Yorumlar
     if (comments.length > 0) {
-      html += '<div class="photo-comments-area">';
-      comments.forEach((c, idx) => {
+      const area = document.createElement('div');
+      area.className = 'photo-comments-area';
+      comments.forEach(function(c, idx) {
         const canDel = isAdmin || (currentUser && c.name === currentUser.name);
-        const stars  = c.rating ? '★'.repeat(c.rating) : '';
-        html += '<div class="photo-comment-item">' +
-          '<span class="photo-comment-author">' + esc(c.name) + '</span>' +
-          (stars ? '<span class="photo-comment-stars">' + stars + '</span>' : '') +
-          (canDel ? '<button class="photo-comment-del" onclick="deletePhotoComment(' + photo.id + ',' + idx + ')">&#215;</button>' : '') +
-          (c.text ? '<br><span>' + esc(c.text) + '</span>' : '') +
-        '</div>';
+        const item = document.createElement('div');
+        item.className = 'photo-comment-item';
+        const author = document.createElement('span');
+        author.className = 'photo-comment-author';
+        author.textContent = c.name;
+        item.appendChild(author);
+        if (c.rating) {
+          const stars = document.createElement('span');
+          stars.className = 'photo-comment-stars';
+          stars.textContent = '★'.repeat(c.rating);
+          item.appendChild(stars);
+        }
+        if (canDel) {
+          const d = document.createElement('button');
+          d.className = 'photo-comment-del';
+          d.innerHTML = '&#215;';
+          d.onclick = (function(pid, i) { return function() { deletePhotoComment(pid, i); }; })(photo.id, idx);
+          item.appendChild(d);
+        }
+        if (c.text) {
+          const br = document.createElement('br');
+          const txt = document.createElement('span');
+          txt.textContent = c.text;
+          item.appendChild(br); item.appendChild(txt);
+        }
+        area.appendChild(item);
       });
-      html += '</div>';
+      card.appendChild(area);
     }
 
-    // Ziyaretçi yorum/puan alanı
+    // Ziyaretçi yorum/puan
     if (isVisitor) {
-      html += '<div class="photo-visitor-actions" id="pva-' + photo.id + '">' +
-        '<div class="photo-stars-row" id="pstars-' + photo.id + '">';
-      for (let i = 1; i <= 10; i++) {
-        html += '<button class="photo-star-btn' + (i <= pending ? ' lit' : '') + '" onclick="setPhotoRating(' + photo.id + ',' + i + ')">' + '★' + '</button>';
+      const va = document.createElement('div');
+      va.className = 'photo-visitor-actions';
+      va.id = 'pva-' + photo.id;
+
+      const starsRow = document.createElement('div');
+      starsRow.className = 'photo-stars-row';
+      starsRow.id = 'pstars-' + photo.id;
+      for (var i = 1; i <= 10; i++) {
+        const sb = document.createElement('button');
+        sb.className = 'photo-star-btn' + (i <= pending ? ' lit' : '');
+        sb.textContent = '★';
+        sb.onclick = (function(pid, val) { return function() { setPhotoRating(pid, val); }; })(photo.id, i);
+        starsRow.appendChild(sb);
       }
-      html += '<span class="photo-star-label" id="pstar-label-' + photo.id + '">' + (pending ? pending + '/10' : '') + '</span></div>' +
-        '<div class="photo-comment-wrap">' +
-          '<textarea class="photo-comment-input" id="pcinput-' + photo.id + '" placeholder="Bu fotoğraf hakkında yorum yaz..." rows="1" ' +
-            'onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPhotoComment(' + photo.id + ');}"></textarea>' +
-          '<button class="photo-comment-send" onclick="sendPhotoComment(' + photo.id + ')">Gönder</button>' +
-        '</div>' +
-      '</div>';
+      const lbl = document.createElement('span');
+      lbl.className = 'photo-star-label';
+      lbl.id = 'pstar-label-' + photo.id;
+      lbl.textContent = pending ? pending + '/10' : '';
+      starsRow.appendChild(lbl);
+      va.appendChild(starsRow);
+
+      const wrap = document.createElement('div');
+      wrap.className = 'photo-comment-wrap';
+      const ta = document.createElement('textarea');
+      ta.className = 'photo-comment-input';
+      ta.id = 'pcinput-' + photo.id;
+      ta.placeholder = 'Bu fotograf hakkinda yorum yaz...';
+      ta.rows = 1;
+      ta.onkeydown = (function(pid) {
+        return function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPhotoComment(pid); }
+        };
+      })(photo.id);
+      const sendBtn = document.createElement('button');
+      sendBtn.className = 'photo-comment-send';
+      sendBtn.textContent = 'Gonder';
+      sendBtn.onclick = (function(pid) { return function() { sendPhotoComment(pid); }; })(photo.id);
+      wrap.appendChild(ta); wrap.appendChild(sendBtn);
+      va.appendChild(wrap);
+      card.appendChild(va);
     }
 
-    card.innerHTML = html;
     masonry.appendChild(card);
   });
 }
