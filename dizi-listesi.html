@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ofree dizi film</title>
+<title>Dizi Listem</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,7 +11,7 @@
     --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
     --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
     --text: #f0efe8; --muted: #7c7b84; --accent: #c8f060;
-    --accent-dim: rgba(200,240,96,0.12);
+    --accent-dim: rgba(200,240,96,0.12); --red: #ff5f5f;
   }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
   header { padding: 48px 24px 24px; border-bottom: 0.5px solid var(--border); background: linear-gradient(180deg, #111116 0%, var(--bg) 100%); }
@@ -21,51 +21,227 @@
   .stats { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
   .stat { font-size: 13px; color: var(--muted); }
   .stat strong { color: var(--text); font-weight: 500; font-size: 15px; margin-right: 4px; }
-  .readonly-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.05); color: var(--muted); border: 0.5px solid var(--border2); margin-left: auto; }
+  .sync-status { font-size: 12px; padding: 3px 10px; border-radius: 20px; margin-left: auto; }
+  .sync-status.ok { background: rgba(200,240,96,0.1); color: var(--accent); }
+  .sync-status.syncing { background: rgba(255,255,255,0.05); color: var(--muted); }
+  .sync-status.err { background: rgba(255,95,95,0.1); color: var(--red); }
   main { padding: 24px; max-width: 700px; margin: 0 auto; }
   .list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
   .row {
     background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px;
-    padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr;
-    gap: 12px; align-items: center; animation: fadeIn 0.25s ease;
+    padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr auto;
+    gap: 12px; align-items: start; transition: border-color 0.2s; animation: fadeIn 0.25s ease;
   }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-  .row-num { font-family: 'Syne', sans-serif; font-size: 12px; color: var(--muted); text-align: center; font-weight: 600; }
-  .row-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .row-name { font-size: 15px; font-weight: 500; color: var(--text); }
+  .row:focus-within { border-color: var(--border2); }
+  .row-num { font-family: 'Syne', sans-serif; font-size: 12px; color: var(--muted); text-align: center; font-weight: 600; padding-top: 6px; }
+  .row-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; position: relative; }
+  .name-input { background: transparent; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: var(--text); width: 100%; padding: 4px 0; }
+  .name-input::placeholder { color: var(--muted); font-weight: 300; }
   .meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--surface2); color: var(--muted); border: 0.5px solid var(--border); white-space: nowrap; }
   .badge.genre { background: var(--accent-dim); color: var(--accent); border-color: rgba(200,240,96,0.2); }
   .badge.imdb { background: rgba(255,180,0,0.1); color: #e8b000; border-color: rgba(255,180,0,0.2); }
   .badge.year { background: rgba(96,184,240,0.1); color: #60b8f0; border-color: rgba(96,184,240,0.2); }
-  .empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
-  .spinner-page { display: flex; align-items: center; justify-content: center; padding: 48px; }
-  .spinner { width: 20px; height: 20px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+  .spinner { width: 13px; height: 13px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  @media (max-width: 480px) { header { padding: 32px 16px 20px; } main { padding: 16px; } }
+  .del-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; line-height: 1; padding: 4px; border-radius: 8px; opacity: 0.5; transition: opacity 0.15s, color 0.15s; margin-top: 2px; }
+  .del-btn:hover { opacity: 1; color: var(--red); }
+  .add-btn { width: 100%; padding: 14px; border: 0.5px dashed var(--border2); border-radius: 14px; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s, color 0.15s; margin-bottom: 16px; }
+  .add-btn:hover { background: var(--surface); color: var(--text); }
+  .toolbar { display: flex; gap: 8px; justify-content: flex-end; }
+  .tool-btn { padding: 9px 16px; border-radius: 10px; border: 0.5px solid var(--border2); background: var(--surface); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .tool-btn:hover { background: var(--surface2); color: var(--text); }
+  .err { font-size: 11px; color: var(--red); }
+
+  /* Öneri dropdown */
+  .suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: #1e1e26;
+    border: 0.5px solid var(--border2);
+    border-radius: 10px;
+    z-index: 100;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    margin-top: 4px;
+  }
+  .suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:hover, .suggestion-item.active { background: var(--surface2); }
+  .suggestion-poster { width: 28px; height: 40px; border-radius: 4px; object-fit: cover; background: var(--surface); flex-shrink: 0; }
+  .suggestion-poster-placeholder { width: 28px; height: 40px; border-radius: 4px; background: var(--surface2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .suggestion-info { flex: 1; min-width: 0; }
+  .suggestion-title { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .suggestion-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .suggestion-loading { padding: 12px 14px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+
+  /* Header layout */
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .header-titles { flex: 1; min-width: 0; }
+
+  /* Arama kutusu */
+  .search-wrap { position: relative; flex-shrink: 0; }
+  .search-input {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 8px 36px 8px 12px;
+    width: 200px;
+    outline: none;
+    transition: border-color 0.2s, width 0.3s, background 0.2s;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: var(--accent); background: var(--surface2); width: 240px; }
+  .search-icon {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 15px; pointer-events: none; line-height: 1;
+  }
+  .search-clear {
+    position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: var(--muted);
+    font-size: 16px; line-height: 1; padding: 0; display: none;
+    transition: color 0.15s;
+  }
+  .search-clear:hover { color: var(--text); }
+  .no-results { text-align: center; color: var(--muted); font-size: 14px; padding: 32px 0; display: none; }
+
+  @media (max-width: 480px) {
+    header { padding: 32px 16px 20px; }
+    main { padding: 16px; }
+    .search-input { width: 150px; }
+    .search-input:focus { width: 180px; }
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>Ofree<span>Dizi Film Listem</span></h1>
-  <p>İzlediğim dizi ve filmler</p>
+  <div class="header-top">
+    <div class="header-titles">
+      <h1>Dizi<span>Listem</span></h1>
+      <p>Dizi adını yaz, bilgiler otomatik gelsin</p>
+    </div>
+    <div class="search-wrap" style="margin-top:6px;">
+      <input class="search-input" id="search-input" type="text" placeholder="Listede ara..." oninput="handleSearch(this.value)" autocomplete="off" />
+      <span class="search-icon" id="search-icon">🔍</span>
+      <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Temizle">×</button>
+    </div>
+  </div>
   <div class="stats">
     <div class="stat"><strong id="total">0</strong> dizi</div>
     <div class="stat"><strong id="avg">—</strong> ort. puan</div>
-    <span class="readonly-badge">👁 görüntüleme modu</span>
+    <span class="sync-status syncing" id="sync-status">bağlanıyor...</span>
+  </div>
   </div>
 </header>
 <main>
-  <div class="list" id="list">
-    <div class="spinner-page"><div class="spinner"></div></div>
+  <div class="list" id="list"></div>
+  <p class="no-results" id="no-results">🔍 Sonuç bulunamadı</p>
+  <button class="add-btn" onclick="addRow()">+ Yeni dizi ekle</button>
+  <div class="toolbar">
+    <button class="tool-btn" onclick="exportCSV()">⬇ CSV indir</button>
   </div>
 </main>
 <script>
+const OMDB_KEY = 'f0373d3e';
 const FB_URL = 'https://dizi-listesi-default-rtdb.firebaseio.com/diziler';
+let rows = [], nextId = 1;
+const cache = {};
+let searchTimers = {};
+let activeSuggestions = {};
 
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function setSyncStatus(state) {
+  const el = document.getElementById('sync-status');
+  if (state === 'ok') { el.textContent = '✓ senkronize'; el.className = 'sync-status ok'; }
+  else if (state === 'syncing') { el.textContent = 'kaydediliyor...'; el.className = 'sync-status syncing'; }
+  else { el.textContent = 'bağlantı hatası'; el.className = 'sync-status err'; }
+}
+
+async function loadFromFirebase() {
+  try {
+    const res = await fetch(FB_URL + '.json');
+    const data = await res.json();
+    if (data) {
+      rows = Object.values(data).sort((a,b) => a.id - b.id);
+      rows.forEach(r => { if (r.id >= nextId) nextId = r.id + 1; });
+    }
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('err'); }
+  render();
+}
+
+async function saveToFirebase() {
+  setSyncStatus('syncing');
+  try {
+    const obj = {};
+    rows.forEach(r => { obj['row_' + r.id] = r; });
+    await fetch(FB_URL + '.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('err'); }
+}
+
+function addRow(name='', genre='', imdb='', year='') {
+  const id = nextId++;
+  rows.push({ id, name, genre, imdb, year, loading: false, error: false });
+  render();
+  if (!name) setTimeout(() => { const inp = document.getElementById('inp-'+id); if(inp) inp.focus(); }, 50);
+}
+
+function deleteRow(id) {
+  rows = rows.filter(r => r.id !== id);
+  render();
+  saveToFirebase();
+}
+
+function render() {
+  const list = document.getElementById('list');
+  const focused = document.activeElement;
+  const focusedId = focused ? focused.id : null;
+  list.innerHTML = '';
+  rows.forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = 'row';
+    div.innerHTML = `
+      <div class="row-num">${i+1}</div>
+      <div class="row-body" id="body-${row.id}">
+        <input class="name-input" id="inp-${row.id}" value="${esc(row.name)}" placeholder="Dizi adını girin..."
+          autocomplete="off"
+          oninput="handleInput(${row.id}, this.value)"
+          onblur="handleBlur(${row.id}, this.value)"
+          onkeydown="handleKeydown(event, ${row.id})"
+        />
+        <div class="meta" id="meta-${row.id}">${metaHTML(row)}</div>
+      </div>
+      <button class="del-btn" onmousedown="event.preventDefault()" onclick="deleteRow(${row.id})" title="Sil">×</button>
+    `;
+    list.appendChild(div);
+    if (activeSuggestions[row.id]) {
+      renderSuggestions(row.id, activeSuggestions[row.id]);
+    }
+  });
+  if (focusedId) {
+    const el = document.getElementById(focusedId);
+    if (el) { el.focus(); const len = el.value.length; el.setSelectionRange(len, len); }
+  }
+  updateStats();
+  if (searchQuery) applySearch();
+}
 
 function metaHTML(row) {
+  if (row.loading) return '<span class="spinner"></span>';
+  if (row.error) return '<span class="err">bulunamadı — İngilizce deneyin</span>';
   let html = '';
   if (row.genre) html += `<span class="badge genre">${esc(row.genre)}</span>`;
   if (row.imdb)  html += `<span class="badge imdb">★ ${esc(row.imdb)}</span>`;
@@ -73,36 +249,191 @@ function metaHTML(row) {
   return html;
 }
 
-async function load() {
-  try {
-    const res = await fetch(FB_URL + '.json');
-    const data = await res.json();
-    const list = document.getElementById('list');
-    list.innerHTML = '';
-    if (!data) { list.innerHTML = '<div class="empty">Henüz dizi eklenmemiş.</div>'; return; }
-    const rows = Object.values(data).filter(r => r.name).sort((a,b) => a.id - b.id);
-    if (!rows.length) { list.innerHTML = '<div class="empty">Henüz dizi eklenmemiş.</div>'; return; }
-    rows.forEach((row, i) => {
-      const div = document.createElement('div');
-      div.className = 'row';
-      div.innerHTML = `
-        <div class="row-num">${i+1}</div>
-        <div class="row-body">
-          <div class="row-name">${esc(row.name)}</div>
-          <div class="meta">${metaHTML(row)}</div>
-        </div>
-      `;
-      list.appendChild(div);
-    });
-    const scores = rows.filter(r => r.imdb && r.imdb !== 'N/A').map(r => parseFloat(r.imdb)).filter(n => !isNaN(n));
-    document.getElementById('total').textContent = rows.length;
-    document.getElementById('avg').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
-  } catch(e) {
-    document.getElementById('list').innerHTML = '<div class="empty">Veriler yüklenemedi.</div>';
-  }
+function updateStats() {
+  document.getElementById('total').textContent = rows.filter(r => r.name).length;
+  const scores = rows.filter(r => r.imdb && r.imdb !== 'N/A').map(r => parseFloat(r.imdb)).filter(n => !isNaN(n));
+  document.getElementById('avg').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
 }
 
-load();
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Öneri arama (yazarken)
+function handleInput(id, val) {
+  clearTimeout(searchTimers[id]);
+  const trimmed = val.trim();
+  if (trimmed.length < 2) { delete activeSuggestions[id]; hideSuggestions(id); return; }
+  showSuggestionsLoading(id);
+  searchTimers[id] = setTimeout(() => fetchSuggestions(id, trimmed), 400);
+}
+
+async function fetchSuggestions(id, query) {
+  try {
+    const res = await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&type=series&apikey=${OMDB_KEY}`);
+    const data = await res.json();
+    if (data.Response === 'True' && data.Search) {
+      activeSuggestions[id] = data.Search.slice(0, 5);
+      renderSuggestions(id, activeSuggestions[id]);
+    } else {
+      delete activeSuggestions[id];
+      hideSuggestions(id);
+    }
+  } catch(e) { hideSuggestions(id); }
+}
+
+function showSuggestionsLoading(id) {
+  const body = document.getElementById('body-' + id);
+  if (!body) return;
+  let box = document.getElementById('sugg-' + id);
+  if (!box) { box = document.createElement('div'); box.className = 'suggestions'; box.id = 'sugg-' + id; body.appendChild(box); }
+  box.innerHTML = `<div class="suggestion-loading"><span class="spinner"></span> aranıyor...</div>`;
+}
+
+function renderSuggestions(id, items) {
+  const body = document.getElementById('body-' + id);
+  if (!body) return;
+  let box = document.getElementById('sugg-' + id);
+  if (!box) { box = document.createElement('div'); box.className = 'suggestions'; box.id = 'sugg-' + id; body.appendChild(box); }
+  box.innerHTML = '';
+  items.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'suggestion-item';
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      ${item.Poster && item.Poster !== 'N/A'
+        ? `<img class="suggestion-poster" src="${item.Poster}" alt="" loading="lazy">`
+        : `<div class="suggestion-poster-placeholder">🎬</div>`}
+      <div class="suggestion-info">
+        <div class="suggestion-title">${esc(item.Title)}</div>
+        <div class="suggestion-meta">${item.Year || ''}</div>
+      </div>
+    `;
+    div.onmousedown = (e) => { e.preventDefault(); selectSuggestion(id, item); };
+    box.appendChild(div);
+  });
+}
+
+function hideSuggestions(id) {
+  const box = document.getElementById('sugg-' + id);
+  if (box) box.remove();
+}
+
+async function selectSuggestion(id, item) {
+  const row = rows.find(r => r.id === id);
+  if (!row) return;
+  hideSuggestions(id);
+  delete activeSuggestions[id];
+  const inp = document.getElementById('inp-' + id);
+  if (inp) inp.value = item.Title;
+  row.name = item.Title;
+  row.loading = true; row.genre = ''; row.imdb = ''; row.year = ''; row.error = false;
+  updateMeta(id, row);
+  try {
+    const res = await fetch(`https://www.omdbapi.com/?i=${item.imdbID}&apikey=${OMDB_KEY}`);
+    const data = await res.json();
+    if (data.Response === 'True') {
+      row.genre = (data.Genre || '').split(',')[0].trim();
+      row.imdb  = data.imdbRating || '';
+      row.year  = data.Year || '';
+      row.error = false;
+    } else { row.error = true; }
+  } catch(e) { row.error = true; }
+  row.loading = false;
+  updateMeta(id, row);
+  updateStats();
+  saveToFirebase();
+}
+
+function updateMeta(id, row) {
+  const meta = document.getElementById('meta-' + id);
+  if (meta) meta.innerHTML = metaHTML(row);
+}
+
+function handleKeydown(e, id) {
+  if (e.key === 'Escape') { hideSuggestions(id); delete activeSuggestions[id]; }
+  if (e.key === 'Enter') { hideSuggestions(id); delete activeSuggestions[id]; e.target.blur(); }
+}
+
+function handleBlur(id, val) {
+  setTimeout(() => {
+    hideSuggestions(id);
+    delete activeSuggestions[id];
+    const row = rows.find(r => r.id === id);
+    if (!row) return;
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === row.name) return;
+    row.name = trimmed;
+    fetchDetails(id, trimmed);
+  }, 150);
+}
+
+async function fetchDetails(id, name) {
+  const row = rows.find(r => r.id === id);
+  if (!row || row.genre) return;
+  row.loading = true; row.error = false;
+  updateMeta(id, row);
+  try {
+    const res = await fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(name)}&type=series&apikey=${OMDB_KEY}`);
+    const data = await res.json();
+    if (data.Response === 'True') {
+      row.genre = (data.Genre || '').split(',')[0].trim();
+      row.imdb  = data.imdbRating || '';
+      row.year  = data.Year || '';
+      row.error = false;
+    } else { row.error = true; }
+  } catch(e) { row.error = true; }
+  row.loading = false;
+  updateMeta(id, row);
+  updateStats();
+  saveToFirebase();
+}
+
+function exportCSV() {
+  const lines = ['#,Dizi Adı,Tür,IMDb,Yıl'];
+  rows.filter(r => r.name).forEach((r,i) => lines.push(`${i+1},"${r.name}","${r.genre}","${r.imdb}","${r.year}"`));
+  const blob = new Blob(['\uFEFF'+lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'dizilerim.csv'; a.click();
+}
+
+let searchQuery = '';
+
+function handleSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  const clearBtn = document.getElementById('search-clear');
+  const icon = document.getElementById('search-icon');
+  if (searchQuery) { clearBtn.style.display = 'block'; icon.style.display = 'none'; }
+  else { clearBtn.style.display = 'none'; icon.style.display = 'block'; }
+  applySearch();
+}
+
+function clearSearch() {
+  searchQuery = '';
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-clear').style.display = 'none';
+  document.getElementById('search-icon').style.display = 'block';
+  applySearch();
+}
+
+function applySearch() {
+  const allRows = document.querySelectorAll('#list .row');
+  let visible = 0;
+  allRows.forEach(rowEl => {
+    const input = rowEl.querySelector('.name-input');
+    if (!input) return;
+    const name = (input.value || '').toLowerCase();
+    const genre = rowEl.querySelector('.badge.genre');
+    const genreText = genre ? genre.textContent.toLowerCase() : '';
+    const match = !searchQuery || name.includes(searchQuery) || genreText.includes(searchQuery);
+    rowEl.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  const noRes = document.getElementById('no-results');
+  const addBtn = document.querySelector('.add-btn');
+  noRes.style.display = (searchQuery && visible === 0) ? 'block' : 'none';
+  if (addBtn) addBtn.style.display = searchQuery ? 'none' : '';
+}
+
+loadFromFirebase();
 </script>
 </body>
 </html>
