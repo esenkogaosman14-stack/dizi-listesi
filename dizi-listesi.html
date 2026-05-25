@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -260,6 +259,7 @@
     <div class="stat"><strong id="total-series">0</strong> dizi</div>
     <div class="stat"><strong id="total-movies">0</strong> film</div>
     <div class="stat"><strong id="avg">&#8212;</strong> ort. puan</div>
+    <div class="stat"><strong id="total-visitors">0</strong> ziyaretçi</div>
     <div id="visitor-badge">
       <div class="vb-avatar" id="vb-initial">?</div>
       <span id="vb-name">Ziyaretçi</span>
@@ -309,7 +309,8 @@
 const ADMIN_PASSWORD = '1881';
 const OMDB_KEY = 'f0373d3e';
 const FB_URL   = 'https://dizi-listesi-default-rtdb.firebaseio.com/diziler';
-const FB_COMMENTS_URL = 'https://dizi-listesi-default-rtdb.firebaseio.com/yorumlar';
+const FB_COMMENTS_URL  = 'https://dizi-listesi-default-rtdb.firebaseio.com/yorumlar';
+const FB_VISITORS_URL  = 'https://dizi-listesi-default-rtdb.firebaseio.com/ziyaretciler';
 
 /* ══════════════════════════════════════════
    DURUM DEĞİŞKENLERİ
@@ -356,6 +357,7 @@ function confirmVisitor() {
   document.getElementById('name-overlay').classList.remove('show');
   hideAuthOverlay();
   applyRole();
+  registerVisitor(name);
   loadFromFirebase();
 }
 
@@ -429,6 +431,7 @@ async function loadFromFirebase() {
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('err'); }
   render();
+  loadVisitorCount();
 }
 
 async function saveToFirebase() {
@@ -441,7 +444,26 @@ async function saveToFirebase() {
   } catch(e) { setSyncStatus('err'); }
 }
 
-async function saveComments() {
+async function registerVisitor(name) {
+  try {
+    const key = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    await fetch(FB_VISITORS_URL + '/' + key + '.json', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name, ts: Date.now() })
+    });
+    loadVisitorCount();
+  } catch(e) {}
+}
+
+async function loadVisitorCount() {
+  try {
+    const res  = await fetch(FB_VISITORS_URL + '.json');
+    const data = await res.json();
+    const count = data ? Object.keys(data).length : 0;
+    document.getElementById('total-visitors').textContent = count;
+  } catch(e) {}
+}
   try {
     await fetch(FB_COMMENTS_URL + '.json', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(allComments) });
   } catch(e) {}
