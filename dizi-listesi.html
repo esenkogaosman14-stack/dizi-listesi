@@ -491,7 +491,8 @@ async function loadFromFirebase() {
   } catch(e) { setSyncStatus('err'); }
   render();
   loadVisitorCount();
-  loadPhotoData();
+  await loadPhotoData();
+  if (currentTab === 'photos') renderPhotoTab();
 }
 
 async function saveToFirebase() {
@@ -1162,12 +1163,21 @@ async function loadPhotoData() {
     ]);
     const photosData   = await photosRes.json();
     const commentsData = await commentsRes.json();
-    if (photosData) {
-      photos = Object.values(photosData).sort((a,b) => a.ts - b.ts);
+    if (photosData && typeof photosData === 'object') {
+      photos = Object.values(photosData)
+        .filter(p => p && p.src && p.id)
+        .sort((a,b) => a.ts - b.ts);
       photos.forEach(p => { if (p.id >= nextPhotoId) nextPhotoId = p.id + 1; });
+    } else {
+      photos = [];
     }
-    if (commentsData) photoComments = commentsData;
-  } catch(e) {}
+    if (commentsData && typeof commentsData === 'object') {
+      photoComments = commentsData;
+    } else {
+      photoComments = {};
+    }
+    if (currentTab === 'photos') renderPhotoTab();
+  } catch(e) { console.error('loadPhotoData error:', e); }
 }
 
 /* ══════════════════════════════════════════
