@@ -1080,7 +1080,7 @@ async function savePhotosToFirebase() {
   } catch(e) {}
 }
 
-async async function loadPhotoData() {
+async function loadPhotoData() {
   try {
     const [photosRes, commentsRes] = await Promise.all([
       fetch('https://dizi-listesi-default-rtdb.firebaseio.com/fotolar.json'),
