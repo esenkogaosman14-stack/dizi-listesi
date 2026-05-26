@@ -336,22 +336,22 @@
 <main>
   <div class="controls">
     <div class="tabs">
-      <button class="tab-btn active" id="tab-all" onclick="setTab('all')">Tumü</button>
-      <button class="tab-btn series" id="tab-series" onclick="setTab('series')">Diziler</button>
-      <button class="tab-btn movie" id="tab-movies" onclick="setTab('movies')">Filmler</button>
-      <button class="tab-btn photo" id="tab-photos" onclick="setTab('photos')">📸 Fotoğraflar</button>
+      <button class="tab-btn active" id="tab-all" onclick="setTab('all')">Tümü</button>
+      <button class="tab-btn series" id="tab-series" onclick="setTab('series')">Dizi Listem</button>
+      <button class="tab-btn movie" id="tab-movies" onclick="setTab('movies')">Film Listem</button>
+      <button class="tab-btn photo" id="tab-photos" onclick="setTab('photos')">📸 Anı Köşesi</button>
     </div>
     <button class="sort-btn" id="sort-btn" onclick="toggleSort()">&#9733; IMDb sirala</button>
   </div>
   <p class="no-results" id="no-results">Sonuc bulunamadi</p>
   <div class="two-col" id="view-all">
     <div>
-      <div class="section-header series-header">Diziler <span class="section-count" id="series-count"></span></div>
+      <div class="section-header series-header">Dizi Listem <span class="section-count" id="series-count"></span></div>
       <div class="list" id="list-series"></div>
       <button class="add-btn series" onclick="addRow('series')">+ Dizi ekle</button>
     </div>
     <div>
-      <div class="section-header movie-header">Filmler <span class="section-count" id="movie-count"></span></div>
+      <div class="section-header movie-header">Film Listem <span class="section-count" id="movie-count"></span></div>
       <div class="list" id="list-movies"></div>
       <button class="add-btn movie" onclick="addRow('movies')">+ Film ekle</button>
     </div>
@@ -368,11 +368,11 @@
     <div class="photo-tab-header" id="photo-tab-header-admin" style="display:none;">
       <label class="photo-upload-main">
         <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)">
-        <span>&#43; Fotoğraf Yükle</span>
+        <span>&#43; Anı Ekle</span>
       </label>
     </div>
     <div class="photo-masonry" id="photo-masonry"></div>
-    <p class="photo-empty" id="photo-empty">Henüz fotoğraf yok.</p>
+    <p class="photo-empty" id="photo-empty">Henüz anı eklenmemiş.</p>
   </div>
   <div class="toolbar" style="margin-top:8px;">
     <button class="tool-btn" onclick="exportCSV()">&#11015; CSV indir</button>
@@ -722,7 +722,7 @@ function renderList(listId, items) {
       '<div class="row-num">' + (i+1) + '</div>' +
       '<div class="row-body" id="body-' + row.id + '-' + listId + '">' +
         '<input class="name-input" id="inp-' + row.id + '" value="' + esc(row.name) + '" ' +
-          'placeholder="' + (row.mediaType==='movies' ? 'Film adi girin...' : 'Dizi adi girin...') + '" ' +
+          'placeholder="' + (row.mediaType==='movies' ? 'Film adını yaz...' : 'Dizi adını yaz...') + '" ' +
           'autocomplete="off" ' + inputAttrs + ' />' +
         '<div class="meta" id="meta-' + row.id + '-' + listId + '">' + metaHTML(row) + '</div>' +
         '<div class="row-visitor-panel" id="vpanel-' + row.id + '-' + listId + '"></div>' +
@@ -953,7 +953,6 @@ function exportCSV() {
 ══════════════════════════════════════════ */
 let photos = [];        // [{id, src, name, ts}]
 let photoComments = {}; // { photoId: [{name, rating, text, ts}] }
-let photoPendingRatings = {}; // photoId → 1..10
 let nextPhotoId = 1;
 
 
@@ -1026,8 +1025,7 @@ function renderPhotoTab() {
   empty.style.display = 'none';
 
   photos.forEach(function(photo) {
-    const comments = photoComments[photo.id] || [];
-    const pending  = photoPendingRatings[photo.id] || 0;
+
     const card = document.createElement('div');
     card.className = 'photo-card';
 
@@ -1063,122 +1061,12 @@ function renderPhotoTab() {
     }
     card.appendChild(actions);
 
-    // Yorumlar
-    if (comments.length > 0) {
-      const area = document.createElement('div');
-      area.className = 'photo-comments-area';
-      comments.forEach(function(c, idx) {
-        const canDel = isAdmin || (currentUser && c.name === currentUser.name);
-        const item = document.createElement('div');
-        item.className = 'photo-comment-item';
-        const author = document.createElement('span');
-        author.className = 'photo-comment-author';
-        author.textContent = c.name;
-        item.appendChild(author);
-        if (c.rating) {
-          const stars = document.createElement('span');
-          stars.className = 'photo-comment-stars';
-          stars.textContent = '★'.repeat(c.rating);
-          item.appendChild(stars);
-        }
-        if (canDel) {
-          const d = document.createElement('button');
-          d.className = 'photo-comment-del';
-          d.innerHTML = '&#215;';
-          d.onclick = (function(pid, i) { return function() { deletePhotoComment(pid, i); }; })(photo.id, idx);
-          item.appendChild(d);
-        }
-        if (c.text) {
-          const br = document.createElement('br');
-          const txt = document.createElement('span');
-          txt.textContent = c.text;
-          item.appendChild(br); item.appendChild(txt);
-        }
-        area.appendChild(item);
-      });
-      card.appendChild(area);
-    }
 
-    // Ziyaretçi yorum/puan
-    if (isVisitor || isAdmin) {
-      const va = document.createElement('div');
-      va.className = 'photo-visitor-actions';
-      va.id = 'pva-' + photo.id;
 
-      const starsRow = document.createElement('div');
-      starsRow.className = 'photo-stars-row';
-      starsRow.id = 'pstars-' + photo.id;
-      for (var i = 1; i <= 10; i++) {
-        const sb = document.createElement('button');
-        sb.className = 'photo-star-btn' + (i <= pending ? ' lit' : '');
-        sb.textContent = '★';
-        sb.onclick = (function(pid, val) { return function() { setPhotoRating(pid, val); }; })(photo.id, i);
-        starsRow.appendChild(sb);
-      }
-      const lbl = document.createElement('span');
-      lbl.className = 'photo-star-label';
-      lbl.id = 'pstar-label-' + photo.id;
-      lbl.textContent = pending ? pending + '/10' : '';
-      starsRow.appendChild(lbl);
-      va.appendChild(starsRow);
 
-      const wrap = document.createElement('div');
-      wrap.className = 'photo-comment-wrap';
-      const ta = document.createElement('textarea');
-      ta.className = 'photo-comment-input';
-      ta.id = 'pcinput-' + photo.id;
-      ta.placeholder = 'Bu fotoğraf hakkında yorum yaz...';
-      ta.rows = 1;
-      ta.onkeydown = (function(pid) {
-        return function(e) {
-          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPhotoComment(pid); }
-        };
-      })(photo.id);
-      const sendBtn = document.createElement('button');
-      sendBtn.className = 'photo-comment-send';
-      sendBtn.textContent = 'Gönder';
-      sendBtn.onclick = (function(pid) { return function() { sendPhotoComment(pid); }; })(photo.id);
-      wrap.appendChild(ta); wrap.appendChild(sendBtn);
-      va.appendChild(wrap);
-      card.appendChild(va);
-    }
 
     masonry.appendChild(card);
   });
-}
-
-function setPhotoRating(photoId, val) {
-  photoPendingRatings[photoId] = val;
-  const starsRow = document.getElementById('pstars-' + photoId);
-  if (starsRow) {
-    starsRow.querySelectorAll('.photo-star-btn').forEach((btn, i) => {
-      btn.classList.toggle('lit', i < val);
-    });
-    const lbl = document.getElementById('pstar-label-' + photoId);
-    if (lbl) lbl.textContent = val + '/10';
-  }
-}
-
-function sendPhotoComment(photoId) {
-  if (!currentUser || !currentUser.name) return;
-  const inp = document.getElementById('pcinput-' + photoId);
-  const text = inp ? inp.value.trim() : '';
-  const rating = photoPendingRatings[photoId] || 0;
-  if (!text && !rating) return;
-  if (!photoComments[photoId]) photoComments[photoId] = [];
-  photoComments[photoId].push({ name: currentUser.name, rating, text, ts: Date.now() });
-  delete photoPendingRatings[photoId];
-  savePhotoCommentsToFirebase();
-  renderPhotoTab();
-}
-
-function deletePhotoComment(photoId, idx) {
-  if (photoComments[photoId]) {
-    photoComments[photoId].splice(idx, 1);
-    if (photoComments[photoId].length === 0) delete photoComments[photoId];
-  }
-  savePhotoCommentsToFirebase();
-  renderPhotoTab();
 }
 
 async function savePhotosToFirebase() {
@@ -1192,14 +1080,7 @@ async function savePhotosToFirebase() {
   } catch(e) {}
 }
 
-async function savePhotoCommentsToFirebase() {
-  try {
-    await fetch('https://dizi-listesi-default-rtdb.firebaseio.com/fotoyorumlar.json',
-      { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(photoComments) });
-  } catch(e) {}
-}
-
-async function loadPhotoData() {
+async async function loadPhotoData() {
   try {
     const [photosRes, commentsRes] = await Promise.all([
       fetch('https://dizi-listesi-default-rtdb.firebaseio.com/fotolar.json'),
